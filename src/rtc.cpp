@@ -7,7 +7,7 @@ void RTC::begin()
 {
     Wire.begin();
     myRTC.begin();
-    // myRTC.adjust(DateTime(2023, 11, 17, 2, 22, 15));
+    // myRTC.adjust(DateTime(2023, 11, 19, 22, 55, 00));
 }
 
 void RTC::fetchData(myTime &time)
