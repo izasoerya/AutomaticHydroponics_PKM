@@ -2,10 +2,8 @@
 
 ConnectWIFI::ConnectWIFI(){}
 
-void ConnectWIFI::begin()
+void ConnectWIFI::begin(const char* ssid, const char* password)
 {
-    const char* ssid = "arkadewanalog";
-    const char* password = "arkapresiden2024";
     WiFi.begin(ssid, password, 6);
 
     Serial.print("Connecting to WiFi");

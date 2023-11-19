@@ -8,7 +8,7 @@ private:
     
 public:
     ConnectWIFI();
-    void begin();
+    void begin(const char* ssid, const char* password);
     void scanNetwork();
 };
 
