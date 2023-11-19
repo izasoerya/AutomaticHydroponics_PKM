@@ -5,6 +5,7 @@
 #include "modem.h"
 #include "models.h"
 #include <WiFi.h>
+#include <esp_system.h>
 #include "scheduler.h"
 
 #include <WiFiClient.h>
@@ -158,6 +159,7 @@ void loop () {
         analogWrite(PIN_A_PUPUK, 0);
         analogWrite(PIN_B_PUPUK, 0);
     }
+    if (date.hour == 0 && date.minute == 5 && date.second == 50) esp_restart();
     Blynk.run();
 }
 
