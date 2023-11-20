@@ -8,6 +8,7 @@ private:
     GravityTDS tds;
 public:
     Turbidity();
+    void begin();
     void begin(int pinTDS);
     void begin(int pinTDS, int pinTemperature);
     void updateData();

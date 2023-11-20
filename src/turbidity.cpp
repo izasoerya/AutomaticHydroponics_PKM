@@ -3,6 +3,14 @@
 
 Turbidity::Turbidity():tds(GravityTDS()){}
 
+void Turbidity::begin()
+{
+    tds.setPin(32);
+    tds.setAref(3.3);       //reference voltage on ADC, default 5.0V on Arduino UNO
+    tds.setAdcRange(4096);  //1024 for 10bit ADC;4096 for 12bit ADC
+    tds.begin();            //initialization
+}
+
 void Turbidity::begin(int pinTDS)
 {
     tds.setPin(pinTDS);

@@ -1,8 +1,11 @@
 #include "modem.h"
 
-ConnectWIFI::ConnectWIFI(){}
+ConnectWIFI::ConnectWIFI(const char* ssid, const char* password){
+    this->ssid = ssid;
+    this->password = password;
+}
 
-void ConnectWIFI::begin(const char* ssid, const char* password)
+void ConnectWIFI::begin()
 {
     WiFi.begin(ssid, password, 6);
 

@@ -5,11 +5,11 @@
 
 class ConnectWIFI{
 private:
-    
+    const char* ssid;
+    const char* password;
 public:
-    ConnectWIFI();
-    void begin(const char* ssid, const char* password);
-    void scanNetwork();
+    ConnectWIFI(const char* ssid, const char* password);
+    void begin();
 };
 
 #endif

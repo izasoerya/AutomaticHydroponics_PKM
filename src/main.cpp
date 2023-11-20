@@ -27,15 +27,14 @@ const char* password = "336409000";
 RTC rtc;
 Turbidity tds;
 myTime date;
-ConnectWIFI mywifi;
+ConnectWIFI mywifi(ssid, password);
 drivenState state = MANUAL;
 
 void setup () {
-    const int pinTDS = 32;
     Serial.begin(115200);
     rtc.begin();
-    tds.begin(pinTDS);
-    mywifi.begin(ssid, password);  
+    tds.begin();
+    mywifi.begin();  
     Blynk.begin(BLYNK_AUTH_TOKEN, ssid, password);
 
     pinMode(PIN_WATER_PUMP, OUTPUT);
@@ -94,20 +93,14 @@ BLYNK_WRITE(V9)     // DRIVE STATE
     }
 }
 
-void doWorkNow(float ppmValue);
-
-void fetchRTC () {
-    rtc.fetchData(date);
-}
-
+float ppmValue;
 void fetchTDS () {
-    float ppmValue;
+    rtc.fetchData(date);
     tds.updateData();
     ppmValue = tds.fetchData();
-    doWorkNow(ppmValue);
 }
 
-void doWorkNow(float ppmValue) {
+void doWorkNow() {
     char buffer[255];
     snprintf(buffer, sizeof(buffer),"PPM value is : %.2f, Time : %02d:%02d:%02d", ppmValue, date.hour, date.minute, date.second);
     Serial.println((String)buffer);
@@ -119,19 +112,16 @@ void doWorkNow(float ppmValue) {
 }
 
 void flagCondition () {
-    if (date.hour > 8 && date.hour < 13)
-    {
+    if (date.hour > 8 && date.hour < 13) {
         digitalWrite(PIN_WATER_PUMP, !HIGH);
         digitalWrite(PIN_LED_ROAD, !HIGH);
     }
-    else if (date.hour > 15 && date.hour < 20)
-    {
+    else if (date.hour > 15 && date.hour < 20) {
         digitalWrite(PIN_WATER_PUMP, !HIGH);
         digitalWrite(PIN_LED_ROAD, !HIGH);
     }
 
-    if (digitalRead(PIN_FULL_TANK)) 
-    {
+    if (digitalRead(PIN_FULL_TANK)) {
         analogWrite(PIN_AB_PUPUK, 100);
         analogWrite(PIN_A_PUPUK, 0);
         analogWrite(PIN_B_PUPUK, 0);
@@ -139,8 +129,7 @@ void flagCondition () {
         Serial.println("tai");
         delay(20000);
     }
-    else 
-    {
+    else {
         Serial.println("not tai");
         analogWrite(PIN_AB_PUPUK, 0);
         analogWrite(PIN_A_PUPUK, 100);
@@ -148,18 +137,20 @@ void flagCondition () {
     }
 }
 
-TaskScheduler fetchDataRTC  (1, "RTC", 1000, fetchRTC);
-TaskScheduler fetchDataTDS  (2, "TDS", 1000, fetchTDS);
+TaskScheduler fetchDataTDS  (1, "TDS", 1000, fetchTDS);
+TaskScheduler sendDataBlynk (2, "BLYNK", 1000, doWorkNow);
 
 void loop () {
-    fetchDataRTC.runTask();
     fetchDataTDS.runTask();
+    sendDataBlynk.runTask();
     if (state == AUTOMATIC) flagCondition();
     if (digitalRead(PIN_FULL_TANK)) {       // Hard Shutdown Pump Fertilizer
         analogWrite(PIN_A_PUPUK, 0);
         analogWrite(PIN_B_PUPUK, 0);
     }
-    if (date.hour == 0 && date.minute == 5 && date.second == 50) esp_restart();
+    if (date.hour == 0 && date.minute == 5 && date.second == 50) {
+        esp_restart();
+    }
     Blynk.run();
 }
 
