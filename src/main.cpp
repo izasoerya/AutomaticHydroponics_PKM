@@ -37,35 +37,41 @@ void setup () {
     mywifi.begin();  
     Blynk.begin(BLYNK_AUTH_TOKEN, ssid, password);
 
-    pinMode(PIN_WATER_PUMP, OUTPUT);
-    pinMode(PIN_LED_ROAD,   OUTPUT);
-    pinMode(PIN_A_PUPUK,    OUTPUT);
-    pinMode(PIN_B_PUPUK,    OUTPUT);
-    pinMode(PIN_AB_PUPUK,   OUTPUT);
-    pinMode(PIN_FULL_TANK,   INPUT);
+    pinMode(PIN_WATER_PUMP,     OUTPUT);
+    pinMode(PIN_LED_ROAD,       OUTPUT);
+    pinMode(PIN_A_PUPUK,        OUTPUT);
+    pinMode(PIN_B_PUPUK,        OUTPUT);
+    pinMode(PIN_AB_PUPUK,       OUTPUT);
+    pinMode(PIN_FULL_TANK,       INPUT);
     digitalWrite(PIN_WATER_PUMP,    !LOW);
     digitalWrite(PIN_LED_ROAD,      !LOW);
+    analogWrite(PIN_A_PUPUK,    0);
+    analogWrite(PIN_B_PUPUK,    0);
+    analogWrite(PIN_AB_PUPUK,   0);
 }
 
 BLYNK_WRITE(V6)     // Fill AB MIX
 {
     int pinValue = param.asInt(); 
-    if(!digitalRead(PIN_FULL_TANK)) {
-        if (state == MANUAL) analogWrite(PIN_A_PUPUK, 100);
-        if (state == MANUAL) analogWrite(PIN_B_PUPUK, 100);
-        if (state == MANUAL) analogWrite(PIN_AB_PUPUK, 0);
+    if(!digitalRead(PIN_FULL_TANK) && state == MANUAL && pinValue == 1) {
+        analogWrite(PIN_A_PUPUK, 200);
+        analogWrite(PIN_B_PUPUK, 200);
+        analogWrite(PIN_AB_PUPUK, 0);
+    }
+    else if(pinValue == 0) {
+        analogWrite(PIN_A_PUPUK, 0);
+        analogWrite(PIN_B_PUPUK, 0);
+
     }
 }
 
 BLYNK_WRITE(V5)     // Release AB MIX
 {
     int pinValue = param.asInt(); 
-    if (state == MANUAL && pinValue == 1) analogWrite(PIN_AB_PUPUK, 100);
+    if (state == MANUAL && pinValue == 1) analogWrite(PIN_AB_PUPUK, 200);
     else if (state == MANUAL && pinValue == 0) analogWrite(PIN_AB_PUPUK, 0);
-
-    if (state == MANUAL) analogWrite(PIN_A_PUPUK, 0);
-    if (state == MANUAL) analogWrite(PIN_B_PUPUK, 0);
-
+    analogWrite(PIN_A_PUPUK, 0);
+    analogWrite(PIN_B_PUPUK, 0);
 }
 
 BLYNK_WRITE(V7)     // LED LAMP
@@ -88,8 +94,6 @@ BLYNK_WRITE(V9)     // DRIVE STATE
         state = MANUAL;
         digitalWrite(PIN_LED_ROAD, !LOW);
         digitalWrite(PIN_WATER_PUMP,!LOW);
-        analogWrite(PIN_A_PUPUK, 0);
-        analogWrite(PIN_B_PUPUK, 0);
     }
 }
 
@@ -120,21 +124,6 @@ void flagCondition () {
         digitalWrite(PIN_WATER_PUMP, !HIGH);
         digitalWrite(PIN_LED_ROAD, !HIGH);
     }
-
-    if (digitalRead(PIN_FULL_TANK)) {
-        analogWrite(PIN_AB_PUPUK, 100);
-        analogWrite(PIN_A_PUPUK, 0);
-        analogWrite(PIN_B_PUPUK, 0);
-
-        Serial.println("tai");
-        delay(20000);
-    }
-    else {
-        Serial.println("not tai");
-        analogWrite(PIN_AB_PUPUK, 0);
-        analogWrite(PIN_A_PUPUK, 100);
-        analogWrite(PIN_B_PUPUK, 100);
-    }
 }
 
 TaskScheduler fetchDataTDS  (1, "TDS", 1000, fetchTDS);
@@ -148,7 +137,7 @@ void loop () {
         analogWrite(PIN_A_PUPUK, 0);
         analogWrite(PIN_B_PUPUK, 0);
     }
-    if (date.hour == 0 && date.minute == 5 && date.second == 50) {
+    if (date.hour == 0 && date.minute == 5 && (date.second == 50)) {
         esp_restart();
     }
     Blynk.run();
