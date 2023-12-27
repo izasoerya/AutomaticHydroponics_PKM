@@ -7,6 +7,9 @@
 #include <WiFi.h>
 #include <esp_system.h>
 #include "scheduler.h"
+#include <internet.h>
+#include <WiFiClientSecure.h>
+#include <HTTPClient.h>
 
 #include <WiFiClient.h>
 #define BLYNK_TEMPLATE_ID       "TMPL6CmepA5vq"
@@ -16,26 +19,34 @@
 
 #define PIN_WATER_PUMP  0
 #define PIN_LED_ROAD    2
-#define PIN_FULL_TANK   27
+#define PIN_FULL_TANK   27      //Active Low
 #define PIN_A_PUPUK     25
 #define PIN_B_PUPUK     26
 #define PIN_AB_PUPUK    33
 
-const char* ssid = "4G-UFI-0345";
-const char* password = "336409000";
+String username = "ihza.surya0302";
+String password = "Makanmieayam4kali";
 
 RTC rtc;
 Turbidity tds;
 myTime date;
-ConnectWIFI mywifi(ssid, password);
+WiFiClientSecure wifi;
+HTTPClient http;
+InternetUGM inet(username, password);
 drivenState state = MANUAL;
+pumpState currentPumpState = AB_ISOFF;
 
 void setup () {
     Serial.begin(115200);
     rtc.begin();
     tds.begin();
-    mywifi.begin();  
-    Blynk.begin(BLYNK_AUTH_TOKEN, ssid, password);
+    // mywifi.begin(); 
+    inet.begin(wifi, http);
+    http.begin(wifi, "https://httpbin.org/get");
+	http.GET();
+	Serial.println(http.getString());
+	http.end(); 
+    Blynk.begin(BLYNK_AUTH_TOKEN, "UGM-Hotspot", "");
 
     pinMode(PIN_WATER_PUMP,     OUTPUT);
     pinMode(PIN_LED_ROAD,       OUTPUT);
@@ -53,23 +64,28 @@ void setup () {
 BLYNK_WRITE(V6)     // Fill AB MIX
 {
     int pinValue = param.asInt(); 
-    if(!digitalRead(PIN_FULL_TANK) && state == MANUAL && pinValue == 1) {
+    if(digitalRead(PIN_FULL_TANK) && pinValue == 1 && currentPumpState == AB_ISOFF) {
         analogWrite(PIN_A_PUPUK, 200);
         analogWrite(PIN_B_PUPUK, 200);
         analogWrite(PIN_AB_PUPUK, 0);
     }
-    else if(pinValue == 0) {
+    else if(pinValue == 0 || !digitalRead(PIN_FULL_TANK)) {     // if already full stop
         analogWrite(PIN_A_PUPUK, 0);
         analogWrite(PIN_B_PUPUK, 0);
-
     }
 }
 
 BLYNK_WRITE(V5)     // Release AB MIX
 {
     int pinValue = param.asInt(); 
-    if (state == MANUAL && pinValue == 1) analogWrite(PIN_AB_PUPUK, 200);
-    else if (state == MANUAL && pinValue == 0) analogWrite(PIN_AB_PUPUK, 0);
+    if (state == MANUAL && pinValue == 1) {
+        analogWrite(PIN_AB_PUPUK, 200);
+        currentPumpState = AB_ISON;
+    }
+    else if (state == MANUAL && pinValue == 0) {
+        analogWrite(PIN_AB_PUPUK, 0);
+        currentPumpState = AB_ISOFF;
+    }
     analogWrite(PIN_A_PUPUK, 0);
     analogWrite(PIN_B_PUPUK, 0);
 }
@@ -93,7 +109,7 @@ BLYNK_WRITE(V9)     // DRIVE STATE
     else {
         state = MANUAL;
         digitalWrite(PIN_LED_ROAD, !LOW);
-        digitalWrite(PIN_WATER_PUMP,!LOW);
+        digitalWrite(PIN_WATER_PUMP, !LOW);
     }
 }
 
@@ -112,7 +128,7 @@ void doWorkNow() {
     Blynk.virtualWrite(V0, !digitalRead(PIN_WATER_PUMP));
     Blynk.virtualWrite(V2, !digitalRead(PIN_LED_ROAD));
     Blynk.virtualWrite(V3, ppmValue);
-    Blynk.virtualWrite(V4, digitalRead(PIN_FULL_TANK));
+    Blynk.virtualWrite(V4, !digitalRead(PIN_FULL_TANK));
 }
 
 void flagCondition () {
@@ -133,7 +149,7 @@ void loop () {
     fetchDataTDS.runTask();
     sendDataBlynk.runTask();
     if (state == AUTOMATIC) flagCondition();
-    if (digitalRead(PIN_FULL_TANK)) {       // Hard Shutdown Pump Fertilizer
+    if (!digitalRead(PIN_FULL_TANK)) {       // Hard Shutdown Pump Fertilizer
         analogWrite(PIN_A_PUPUK, 0);
         analogWrite(PIN_B_PUPUK, 0);
     }
