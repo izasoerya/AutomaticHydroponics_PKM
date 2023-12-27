@@ -1,7 +1,4 @@
 #include <Arduino.h>
-#include <EEPROM.h>
-#include "rtc.h"
-#include "turbidity.h"
 #include "modem.h"
 #include "models.h"
 #include "task.h"
@@ -20,10 +17,6 @@
 
 String username = "ihza.surya0302";
 String password = "Makanmieayam4kali";
-
-RTC rtc;
-Turbidity tds;
-myTime date;
 InternetUGM inet(username, password);
 
 void setup()
@@ -48,40 +41,6 @@ void setup()
     analogWrite(PIN_A_PUPUK, 0);
     analogWrite(PIN_B_PUPUK, 0);
     analogWrite(PIN_AB_PUPUK, 0);
-}
-
-float ppmValue;
-void fetchTDS()
-{
-    rtc.fetchData(date);
-    tds.updateData();
-    ppmValue = tds.fetchData();
-}
-
-void doWorkNow()
-{
-    char buffer[255];
-    snprintf(buffer, sizeof(buffer), "PPM value is : %.2f, Time : %02d:%02d:%02d", ppmValue, date.hour, date.minute, date.second);
-    Serial.println((String)buffer);
-
-    Blynk.virtualWrite(V0, !digitalRead(PIN_WATER_PUMP));
-    Blynk.virtualWrite(V2, !digitalRead(PIN_LED_ROAD));
-    Blynk.virtualWrite(V3, ppmValue);
-    Blynk.virtualWrite(V4, !digitalRead(PIN_FULL_TANK));
-}
-
-void flagCondition()
-{
-    if (date.hour > 8 && date.hour < 13)
-    {
-        digitalWrite(PIN_WATER_PUMP, !HIGH);
-        digitalWrite(PIN_LED_ROAD, !HIGH);
-    }
-    else if (date.hour > 15 && date.hour < 20)
-    {
-        digitalWrite(PIN_WATER_PUMP, !HIGH);
-        digitalWrite(PIN_LED_ROAD, !HIGH);
-    }
 }
 
 TaskScheduler fetchDataTDS(1, "TDS", 1000, fetchTDS);

@@ -29,4 +29,6 @@ pumpState currentPumpState = pumpState::AB_ISON;
 #define PIN_B_PUPUK 26
 #define PIN_AB_PUPUK 33
 
+float ppmValue;
+
 #endif
