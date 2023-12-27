@@ -51,7 +51,7 @@ BLYNK_WRITE(V7) // LED LAMP
 BLYNK_WRITE(V8) // WATER PUMP
 {
     int pinValue = param.asInt();
-    if (state == MANUAL)
+    if (state == MANUAL && ppmValue < 400)
         digitalWrite(PIN_WATER_PUMP, !pinValue);
 }
 

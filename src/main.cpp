@@ -2,14 +2,14 @@
 #include "modem.h"
 #include "models.h"
 #include "task.h"
-#include <WiFi.h>
 #include <esp_system.h>
 #include "scheduler.h"
-#include <internet.h>
+
+#include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
+#include <internet.h>
 
-#include <WiFiClient.h>
 #define BLYNK_TEMPLATE_ID "TMPL6CmepA5vq"
 #define BLYNK_TEMPLATE_NAME "testLED"
 #define BLYNK_AUTH_TOKEN "yDlKAbJH59XMJbjPn55ePrnCDKGiMm9E"
@@ -36,8 +36,8 @@ void setup()
     pinMode(PIN_B_PUPUK, OUTPUT);
     pinMode(PIN_AB_PUPUK, OUTPUT);
     pinMode(PIN_FULL_TANK, INPUT);
-    digitalWrite(PIN_WATER_PUMP, !LOW);
-    digitalWrite(PIN_LED_ROAD, !LOW);
+    digitalWrite(PIN_WATER_PUMP, !LOW); // Active Low
+    digitalWrite(PIN_LED_ROAD, !LOW);   // Active Low
     analogWrite(PIN_A_PUPUK, 0);
     analogWrite(PIN_B_PUPUK, 0);
     analogWrite(PIN_AB_PUPUK, 0);
@@ -52,8 +52,8 @@ void loop()
     sendDataBlynk.runTask();
     if (state == AUTOMATIC)
         flagCondition();
-    if (!digitalRead(PIN_FULL_TANK))
-    { // Hard Shutdown Pump Fertilizer
+    if (!digitalRead(PIN_FULL_TANK)) // Active Low
+    {                                // Hard Shutdown Pump Fertilizer
         analogWrite(PIN_A_PUPUK, 0);
         analogWrite(PIN_B_PUPUK, 0);
     }
@@ -61,5 +61,7 @@ void loop()
     {
         esp_restart();
     }
+    if (ppmValue > 400)
+        digitalWrite(PIN_WATER_PUMP, !LOW);
     Blynk.run();
 }
