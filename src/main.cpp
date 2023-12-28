@@ -15,8 +15,8 @@
 #define BLYNK_AUTH_TOKEN "yDlKAbJH59XMJbjPn55ePrnCDKGiMm9E"
 #include <BlynkSimpleEsp32.h>
 
-String username = "ihza.surya0302";
-String password = "Makanmieayam4kali";
+String username = "patrickrinoparulianhutahaean";
+String password = "Patrick6a";
 InternetUGM inet(username, password);
 
 void setup()
