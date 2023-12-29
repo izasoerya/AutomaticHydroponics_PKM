@@ -29,6 +29,10 @@ pumpState currentPumpState = pumpState::AB_ISON;
 #define PIN_B_PUPUK 26
 #define PIN_AB_PUPUK 33
 
+#define BLYNK_TEMPLATE_ID "TMPL6CmepA5vq"
+#define BLYNK_TEMPLATE_NAME "testLED"
+#define BLYNK_AUTH_TOKEN "yDlKAbJH59XMJbjPn55ePrnCDKGiMm9E"
+
 float ppmValue;
 
 #endif
