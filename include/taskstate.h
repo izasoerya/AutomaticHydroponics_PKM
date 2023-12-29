@@ -45,4 +45,10 @@ void flagCondition()
     }
 }
 
+void hardShutdown(int pinA, int pinB)
+{
+    analogWrite(pinA, 0);
+    analogWrite(pinB, 0);
+}
+
 #endif // MODEL_H

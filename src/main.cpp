@@ -53,14 +53,9 @@ void loop()
     if (state == AUTOMATIC)
         flagCondition();
     if (!digitalRead(PIN_FULL_TANK)) // Active Low
-    {                                // Hard Shutdown Pump Fertilizer
-        analogWrite(PIN_A_PUPUK, 0);
-        analogWrite(PIN_B_PUPUK, 0);
-    }
+        hardShutdown(PIN_A_PUPUK, PIN_B_PUPUK);
     if (date.hour == 0 && date.minute == 5 && (date.second == 50))
-    {
         esp_restart();
-    }
     if (ppmValue > 400)
         digitalWrite(PIN_WATER_PUMP, !LOW);
     Blynk.run();
